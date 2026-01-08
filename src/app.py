@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+import re
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -15,6 +16,12 @@ app = FastAPI(title="Mergington High School API",
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
+
+# Email validation helper
+def is_valid_email(email: str) -> bool:
+    """Validate email format using regex"""
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_pattern, email) is not None
 
 # In-memory activity database
 activities = {
@@ -110,6 +117,10 @@ def signup_for_activity(activity_name: str, email: str):
 @app.delete("/activities/{activity_name}/unregister")
 def unregister_from_activity(activity_name: str, email: str):
     """Remove a student from an activity"""
+    # Validate email format
+    if not is_valid_email(email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
     activity = activities[activity_name]
