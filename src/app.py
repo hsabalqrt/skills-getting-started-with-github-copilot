@@ -1,6 +1,9 @@
-from fastapi import Request
+"""
+High School Management System API
 
-
+A super simple FastAPI application that allows students to view and sign up
+for extracurricular activities at Mergington High School.
+"""
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -117,9 +120,3 @@ def unregister_from_activity(activity_name: str, email: str):
         raise HTTPException(status_code=404, detail="Participant not found in this activity")
     activity["participants"].remove(email)
     return {"message": f"Removed {email} from {activity_name}"}
-"""
-High School Management System API
-
-A super simple FastAPI application that allows students to view and sign up
-for extracurricular activities at Mergington High School.
-"""
