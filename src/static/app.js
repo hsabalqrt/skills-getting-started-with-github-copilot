@@ -20,23 +20,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        let participantsList = '';
+        // Create activity card structure
+        const activityTitle = document.createElement("h4");
+        activityTitle.textContent = name;
+
+        const activityDesc = document.createElement("p");
+        activityDesc.textContent = details.description;
+
+        const activitySchedule = document.createElement("p");
+        const scheduleStrong = document.createElement("strong");
+        scheduleStrong.textContent = "Schedule: ";
+        activitySchedule.appendChild(scheduleStrong);
+        activitySchedule.appendChild(document.createTextNode(details.schedule));
+
+        const activityAvailability = document.createElement("p");
+        const availStrong = document.createElement("strong");
+        availStrong.textContent = "Availability: ";
+        activityAvailability.appendChild(availStrong);
+        activityAvailability.appendChild(document.createTextNode(`${spotsLeft} spots left`));
+
+        const participantsSection = document.createElement("div");
+        participantsSection.className = "participants-section";
+
+        const participantsHeader = document.createElement("p");
+        participantsHeader.className = "participants-header";
+        const headerStrong = document.createElement("strong");
+        headerStrong.textContent = "Participants:";
+        participantsHeader.appendChild(headerStrong);
+
+        participantsSection.appendChild(participantsHeader);
+
+        // Add participants list or empty message
         if (details.participants.length > 0) {
-          participantsList = `<ul class="participants-list no-bullets" data-activity="${name}"></ul>`;
+          const ul = document.createElement("ul");
+          ul.className = "participants-list";
+          ul.setAttribute("data-activity", name);
+          participantsSection.appendChild(ul);
         } else {
-          participantsList = '<p class="no-participants">No participants yet. Be the first to sign up!</p>';
+          const noParticipantsMsg = document.createElement("p");
+          noParticipantsMsg.className = "no-participants";
+          noParticipantsMsg.textContent = "No participants yet. Be the first to sign up!";
+          participantsSection.appendChild(noParticipantsMsg);
         }
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-          <div class="participants-section">
-            <p class="participants-header"><strong>Participants:</strong></p>
-            ${participantsList}
-          </div>
-        `;
+        activityCard.appendChild(activityTitle);
+        activityCard.appendChild(activityDesc);
+        activityCard.appendChild(activitySchedule);
+        activityCard.appendChild(activityAvailability);
+        activityCard.appendChild(participantsSection);
 
         activitiesList.appendChild(activityCard);
 
@@ -46,10 +77,20 @@ document.addEventListener("DOMContentLoaded", () => {
           details.participants.forEach(email => {
             const li = document.createElement('li');
             li.className = 'participant-item';
-            li.innerHTML = `
-              <span class="participant-email">${email}</span>
-              <span class="delete-participant" title="Remove participant" data-email="${email}" data-activity="${name}" style="cursor:pointer; color:#c62828; margin-left:8px; font-weight:bold;">&#10006;</span>
-            `;
+
+            const emailSpan = document.createElement('span');
+            emailSpan.className = 'participant-email';
+            emailSpan.textContent = email;
+
+            const deleteSpan = document.createElement('span');
+            deleteSpan.className = 'delete-participant';
+            deleteSpan.title = 'Remove participant';
+            deleteSpan.setAttribute('data-email', email);
+            deleteSpan.setAttribute('data-activity', name);
+            deleteSpan.textContent = '\u2716';
+
+            li.appendChild(emailSpan);
+            li.appendChild(deleteSpan);
             ul.appendChild(li);
           });
         }
