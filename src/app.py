@@ -98,6 +98,10 @@ def get_activities():
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
+    # Validate email format
+    if not is_valid_email(email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")

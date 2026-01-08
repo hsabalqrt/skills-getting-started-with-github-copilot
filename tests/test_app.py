@@ -29,6 +29,17 @@ def test_signup_duplicate():
     assert response.status_code == 400
     assert "already signed up" in response.json()["detail"]
 
+def test_signup_invalid_email_format():
+    """Test that signup endpoint rejects invalid email formats"""
+    activity = "Chess Club"
+    
+    # Test invalid email format
+    invalid_email = "invalidemail"
+    response = client.post(f"/activities/{activity}/signup?email={invalid_email}")
+    assert response.status_code == 400
+    assert "Invalid email format" in response.json()["detail"]
+
+
 def test_unregister_not_found():
     activity = "Chess Club"
     email = "notfound@mergington.edu"
