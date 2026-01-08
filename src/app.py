@@ -14,6 +14,9 @@ from pathlib import Path
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
 
+# Email validation pattern
+EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
 # Mount the static files directory
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
@@ -95,8 +98,7 @@ def get_activities():
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
     # Validate email format
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_pattern, email):
+    if not re.match(EMAIL_PATTERN, email):
         raise HTTPException(status_code=400, detail="Invalid email format")
     
     # Validate activity exists
@@ -124,8 +126,7 @@ def signup_for_activity(activity_name: str, email: str):
 def unregister_from_activity(activity_name: str, email: str):
     """Remove a student from an activity"""
     # Validate email format
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_pattern, email):
+    if not re.match(EMAIL_PATTERN, email):
         raise HTTPException(status_code=400, detail="Invalid email format")
     
     if activity_name not in activities:
