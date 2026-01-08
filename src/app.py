@@ -1,20 +1,33 @@
-from fastapi import Request
+"""
+High School Management System API
 
-
-
+A super simple FastAPI application that allows students to view and sign up
+for extracurricular activities at Mergington High School.
+"""
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
+import re
 from pathlib import Path
+import re
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
+
+# Email validation pattern
+EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
 # Mount the static files directory
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
+
+# Email validation helper
+def is_valid_email(email: str) -> bool:
+    """Validate email format using regex"""
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_pattern, email) is not None
 
 # In-memory activity database
 activities = {
@@ -91,6 +104,10 @@ def get_activities():
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
+    # Validate email format
+    if not re.match(EMAIL_PATTERN, email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -102,6 +119,11 @@ def signup_for_activity(activity_name: str, email: str):
     if email in activity["participants"]:
         raise HTTPException(status_code=400, detail="Student already signed up for this activity")
 
+    # Validate activity capacity has not been reached
+    if "max_participants" in activity and activity["max_participants"] is not None:
+        if len(activity["participants"]) >= activity["max_participants"]:
+            raise HTTPException(status_code=400, detail="Activity is full")
+
     # Add student
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
@@ -110,6 +132,10 @@ def signup_for_activity(activity_name: str, email: str):
 @app.delete("/activities/{activity_name}/unregister")
 def unregister_from_activity(activity_name: str, email: str):
     """Remove a student from an activity"""
+    # Validate email format
+    if not re.match(EMAIL_PATTERN, email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
     activity = activities[activity_name]
@@ -117,9 +143,3 @@ def unregister_from_activity(activity_name: str, email: str):
         raise HTTPException(status_code=404, detail="Participant not found in this activity")
     activity["participants"].remove(email)
     return {"message": f"Removed {email} from {activity_name}"}
-"""
-High School Management System API
-
-A super simple FastAPI application that allows students to view and sign up
-for extracurricular activities at Mergington High School.
-"""
